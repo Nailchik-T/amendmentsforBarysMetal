@@ -10,3 +10,4 @@ export * from "./terms";
 export * from "./certificates";
 export * from "./cms";
 export * from "./OrderSuccess";
+export * from "./categories";
