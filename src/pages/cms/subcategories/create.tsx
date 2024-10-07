@@ -4,8 +4,10 @@ import {CmsTemplate} from "@features/cms";
 import {Button} from "@shared/ui";
 import {Category, useAllCategories} from "@entities/category";
 import {useCreateSubcategory} from "@features/cms/entities/subcategory";
+import {useNavigate} from "react-router-dom";
 
 export const CreatePage: React.FC = () => {
+    const navigate = useNavigate();
     const {formState, handleSubmit, register} = useForm<{
         name: string;
         files: FileList;
@@ -13,10 +15,6 @@ export const CreatePage: React.FC = () => {
     }>({});
 
     const {createSubcategory} = useCreateSubcategory();
-
-    const handleCreateSubcategory = () => {
-        alert("Подкатегория успешна создана!");
-    };
 
     const {allCategories} = useAllCategories();
 
@@ -28,8 +26,10 @@ export const CreatePage: React.FC = () => {
                         name: form.name,
                         file: form.files[0],
                         categoryId: Number(form.categoryId),
+                    }).then(() => {
+                        alert("Подкатегория успешна создана!");
+                        navigate("/cms/subcategories");
                     });
-                    handleCreateSubcategory();
                 })}
                 className="flex flex-col gap-2"
             >
@@ -56,7 +56,16 @@ export const CreatePage: React.FC = () => {
 
                 <label className="flex gap-2">
                     Категория
-                    <select {...register("categoryId")} className="border">
+                    <select
+                        {...register("categoryId", {
+                            required: true,
+                        })}
+                        className="border"
+                        defaultValue=""
+                    >
+                        <option value="" disabled>
+                            Выберите категорию
+                        </option>
                         {allCategories?.map((c) => (
                             <option value={c.id} key={c.id}>
                                 {c.name}

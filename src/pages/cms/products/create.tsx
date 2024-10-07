@@ -5,8 +5,10 @@ import {Button} from "@shared/ui";
 import {useCreateProduct} from "@features/cms/entities/product";
 import {Category, useAllCategories, useCategory} from "@entities/category";
 import {Subcategory} from "@entities/subcategory";
+import {useNavigate} from "react-router-dom";
 
 export const CreatePage: React.FC = () => {
+    const navigate = useNavigate();
     const {formState, handleSubmit, register, watch} = useForm<{
         name: string;
         price: number;
@@ -68,8 +70,10 @@ export const CreatePage: React.FC = () => {
                             form.property5,
                         ],
                         kaspi: form.kaspi,
+                    }).then(() => {
+                        navigate("/cms/products");
+                        alert("Товар успешно создан");
                     });
-                    alert("Продукт успешно создан!");
                 })}
                 className="flex flex-col gap-2"
             >
@@ -129,7 +133,10 @@ export const CreatePage: React.FC = () => {
 
                 <label className="flex gap-2">
                     Категория
-                    <select {...register("categoryId")} className="border">
+                    <select
+                        {...register("categoryId", {required: true})}
+                        className="border"
+                    >
                         <option value="" disabled selected>
                             Выберите
                         </option>
@@ -144,7 +151,12 @@ export const CreatePage: React.FC = () => {
 
                 <label className="flex gap-2">
                     Подкатегория
-                    <select {...register("subcategoryId")} className="border">
+                    <select
+                        {...register("subcategoryId", {
+                            required: true,
+                        })}
+                        className="border"
+                    >
                         <option value="" disabled selected>
                             Выберите
                         </option>

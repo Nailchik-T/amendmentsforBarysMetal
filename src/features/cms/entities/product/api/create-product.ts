@@ -1,4 +1,4 @@
-import {useMutation} from "@tanstack/react-query";
+import {useMutation, useQueryClient} from "@tanstack/react-query";
 
 import {apiClient, Dto} from "@shared/api";
 import {Category} from "@entities/category";
@@ -43,8 +43,15 @@ export const createProduct = ({
 };
 
 export const useCreateProduct = () => {
+    const queryClient = useQueryClient();
+
     const {mutateAsync, ...mutation} = useMutation({
         mutationFn: createProduct,
+        onSettled: async () => {
+            await queryClient.invalidateQueries({
+                queryKey: ["all-products"],
+            });
+        },
     });
 
     return {

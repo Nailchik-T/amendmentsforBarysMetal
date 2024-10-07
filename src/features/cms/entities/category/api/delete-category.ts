@@ -1,25 +1,32 @@
-import {useMutation} from "@tanstack/react-query";
+import {useMutation, useQueryClient} from "@tanstack/react-query";
 
 import {Category} from "@entities/category";
 import {apiClient, Dto} from "@shared/api";
 
 export type DeleteCategoryDto = Dto<
-	{
-		id: number;
-	},
-	Category
+    {
+        id: number;
+    },
+    Category
 >;
 
 export const deleteCategory = (req: DeleteCategoryDto["req"]) =>
-	apiClient.delete<DeleteCategoryDto["res"]>(`/api/v1/categories/${req.id}`);
+    apiClient.delete<DeleteCategoryDto["res"]>(`/api/v1/categories/${req.id}`);
 
 export const useDeleteCategory = () => {
-	const {mutateAsync, ...mutation} = useMutation({
-		mutationFn: deleteCategory,
-	});
+    const queryClient = useQueryClient();
 
-	return {
-		deleteCategory: mutateAsync,
-		...mutation,
-	};
+    const {mutateAsync, ...mutation} = useMutation({
+        mutationFn: deleteCategory,
+        onSettled: async () => {
+            await queryClient.invalidateQueries({
+                queryKey: ["categories"],
+            });
+        },
+    });
+
+    return {
+        deleteCategory: mutateAsync,
+        ...mutation,
+    };
 };

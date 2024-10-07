@@ -3,8 +3,10 @@ import {useForm} from "react-hook-form";
 import {CmsTemplate} from "@features/cms";
 import {Button} from "@shared/ui";
 import {useCreateCategory} from "@features/cms/entities/category";
+import {useNavigate} from "react-router-dom";
 
 export const CreatePage: React.FC = () => {
+    const navigate = useNavigate();
     const {createCategory} = useCreateCategory();
 
     const {formState, handleSubmit, register} = useForm<{
@@ -19,8 +21,10 @@ export const CreatePage: React.FC = () => {
                     createCategory({
                         name: form.name,
                         file: form.files[0],
+                    }).then(() => {
+                        alert("Категория успешна создана!");
+                        navigate("/cms/categories");
                     });
-                    alert("Категория успешна создана!");
                 })}
                 className="flex flex-col gap-2"
             >

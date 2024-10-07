@@ -7,14 +7,18 @@ import {
     useDeleteSubcategory,
     useSubcategory,
 } from "@features/cms/entities/subcategory";
+import {useNavigate} from "react-router-dom";
 
 export const SubcategoryPage: React.FC = () => {
+    const navigate = useNavigate();
+
     const {subcategoryId} = useParams() as {subcategoryId: string};
 
     const {subcategory} = useSubcategory({id: subcategoryId});
     const {deleteSubcategory} = useDeleteSubcategory();
     const handleDeleteSubcategory = () => {
         alert("Подкатегория успешна удалена!");
+        navigate("/cms/subcategories");
     };
     return (
         <CmsTemplate title="Редактирование категории">

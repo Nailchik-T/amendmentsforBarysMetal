@@ -110,7 +110,6 @@ const SubcategoryCatalogue: React.FC<{
         >
             <div className="flex flex-col gap-8">
                 <Features />
-
                 <h2 className="font-semibold text-3xl">{subcategory.name}</h2>
             </div>
 
@@ -220,7 +219,7 @@ const ProductsList: React.FC<{
                 </div>
             </div>
 
-            <div className="flex flex-wrap gap-10 -m-2 justify-center">
+            <div className="flex flex-wrap gap-10 -m-2 justify-start sm:justify-center">
                 {sortProducts().map((product) => {
                     const isInCart = cart.some(
                         (i) => i.product.id === product.id,
