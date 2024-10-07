@@ -1,34 +1,38 @@
 import {ContentTemplate} from "@shared/ui";
 import catalogue from "@shared/assets/catalogue.png";
+import {useEffect} from "react";
 
 export const AboutPage: React.FC = () => {
-	return (
-		<ContentTemplate
-			breadcrumbs={[
-				{
-					label: "Главная",
-					link: "/",
-				},
-				{
-					label: "О нас",
-					link: "/about",
-				},
-			]}
-		>
-			<div className="flex flex-col gap-8">
-				<h1 className="text-primary font-semibold text-4xl">
-					Barys metal — это ...
-				</h1>
+    useEffect(() => {
+        window.scrollTo(0, 0); // Scroll to the top of the page
+    }, []);
+    return (
+        <ContentTemplate
+            breadcrumbs={[
+                {
+                    label: "Главная",
+                    link: "/",
+                },
+                {
+                    label: "О нас",
+                    link: "/about",
+                },
+            ]}
+        >
+            <div className="flex flex-col gap-8">
+                <h1 className="text-primary font-semibold text-4xl">
+                    Barys metal — это ...
+                </h1>
 
-				<div className={'sm:flex flex-col'}>
-					<img
-						src={catalogue}
-						alt="Каталог"
-						className="w-80 h-auto float-right clear-both order-2"
-					/>
+                <div className={"sm:flex flex-col"}>
+                    <img
+                        src={catalogue}
+                        alt="Каталог"
+                        className="w-80 h-auto float-right clear-both order-2"
+                    />
 
-					<p className={'order-1'}>
-						{`
+                    <p className={"order-1"}>
+                        {`
 						Торгово-производственная компания ИП Barys работает с 2017 года. Основные направления нашей деятельности:
                         - производство строительного оборудования;
 						- производство металлоизделий и оборудования медицинского назначения;
@@ -37,10 +41,10 @@ export const AboutPage: React.FC = () => {
 
 						С 2024 года ИП Barys сотрудничает и является дилером компании "Пакс металл" (Россия) - одним из главных лидеров рынка металлической мебели.
 						`}
-					</p>
+                    </p>
 
-					<p className="mt-4 order-3">
-						{`
+                    <p className="mt-4 order-3">
+                        {`
 						Это ортопедические изделия, кровати, тележки, подъемники
                         и приспособления для лежачих больных, беременных женщин
                         и лиц с инвалидностью. Наша продукция поможет облегчить
@@ -56,9 +60,9 @@ export const AboutPage: React.FC = () => {
                         станки лазерной резки и сварки, гидравлическое гибочное
                         оборудование и камеры полимерной порошковой покраски.
 						`}
-					</p>
-				</div>
-			</div>
-		</ContentTemplate>
-	);
+                    </p>
+                </div>
+            </div>
+        </ContentTemplate>
+    );
 };

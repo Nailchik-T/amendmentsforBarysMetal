@@ -1,14 +1,15 @@
 import {useForm} from "react-hook-form";
-import {useLocation, useParams} from "wouter";
+import {useParams} from "wouter";
 
 import {useCategory} from "@entities/category";
 import {CmsTemplate} from "@features/cms";
 import {useDeleteCategory} from "@features/cms/entities/category";
 import {BACKEND_URL} from "@shared/config";
 import {Button} from "@shared/ui";
+import {useNavigate} from "react-router-dom";
 
 export const CategoryPage: React.FC = () => {
-    const [, setLocation] = useLocation();
+    const navigate = useNavigate();
     const {categoryId} = useParams() as {categoryId: number};
 
     const {category} = useCategory({id: categoryId});
@@ -16,7 +17,7 @@ export const CategoryPage: React.FC = () => {
 
     const handleDeleteProduct = () => {
         deleteCategory({id: Number(categoryId)});
-        setLocation("/cms/products");
+        navigate("/cms/categories");
         alert("Категория успешна удалена!");
     };
 
@@ -59,7 +60,11 @@ export const CategoryPage: React.FC = () => {
                     />
                 </label>
 
-                <img src={`${BACKEND_URL}${category?.photoPath}`} alt="Фотка" />
+                <img
+                    className={"w-72 h-5/6"}
+                    src={`${BACKEND_URL}${category?.photoPath}`}
+                    alt="Фотка"
+                />
 
                 <div className="flex gap-2">
                     <Button

@@ -1,22 +1,24 @@
 import {useForm} from "react-hook-form";
-import {useLocation, useParams} from "wouter";
+import {useParams} from "wouter";
 
 import {CmsTemplate} from "@features/cms";
 import {Button} from "@shared/ui";
 import {BACKEND_URL} from "@shared/config";
 import {useDeleteProduct} from "@features/cms/entities/product";
 import {useProduct} from "@entities/product";
+import {useNavigate} from "react-router-dom";
 
 export const ProductPage: React.FC = () => {
-    const [, setLocation] = useLocation();
+    const navigate = useNavigate();
     const {productId} = useParams() as {productId: string};
 
     const {product} = useProduct({id: Number(productId)});
 
     const {deleteProduct} = useDeleteProduct();
+
     const handleDeleteProduct = () => {
         deleteProduct({id: Number(productId)});
-        setLocation("/cms/products");
+        navigate("/cms/products");
         alert("Продукт успешно удален!");
     };
     const {formState, handleSubmit, register} = useForm<{

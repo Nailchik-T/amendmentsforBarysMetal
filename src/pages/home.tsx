@@ -8,9 +8,16 @@ import toolkit from "@shared/assets/toolkit.png";
 import catalogue from "@shared/assets/catalogue.png";
 import {useAllCategories} from "@entities/category";
 import {BACKEND_URL} from "@shared/config.ts";
+import {useNavigate} from "react-router-dom";
+import {useEffect} from "react";
 
 export const HomePage: React.FC = () => {
     const {allCategories} = useAllCategories();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        window.scrollTo(0, 0); // Scroll to the top of the page
+    }, []);
     return (
         <ContentTemplate>
             <SliderSection />
@@ -31,11 +38,13 @@ export const HomePage: React.FC = () => {
 						`}
                     </p>
 
-                    <Link to="/about">
-                        <Button color="secondary" className="w-fit py-2">
-                            Подробнее
-                        </Button>
-                    </Link>
+                    <Button
+                        onClick={() => navigate("/about")}
+                        color="secondary"
+                        className="w-fit py-2"
+                    >
+                        Подробнее
+                    </Button>
                 </div>
 
                 <img

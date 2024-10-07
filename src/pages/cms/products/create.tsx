@@ -69,6 +69,7 @@ export const CreatePage: React.FC = () => {
                         ],
                         kaspi: form.kaspi,
                     });
+                    alert("Продукт успешно создан!");
                 })}
                 className="flex flex-col gap-2"
             >
