@@ -8,17 +8,19 @@ export const Features: React.FC = () => {
     ];
 
     return (
-        <div className="flex flex-col gap-6 -mt-10">
-            <h3 className="font-semibold text-2xl">Преимущества заказа</h3>
+        <div className="flex flex-col gap-6 -mt-8">
+            <h3 className="font-semibold text-xl">Преимущества заказа</h3>
 
             <div className="flex flex-col gap-4">
                 {features.map((feature, idx) => (
-                    <div key={idx} className="flex items-center gap-4">
+                    <div key={idx} className="flex items-center gap-2">
                         <div className="bg-primary/40 w-5 h-5 rounded-full relative inline-flex">
                             <Icon.Check className="w- h-auto absolute right-0 top-0.5 text-primary" />
                         </div>
 
-                        <span className="inline-flex flex-1">{feature}</span>
+                        <span className="inline-flex flex-1 text-sm">
+                            {feature}
+                        </span>
                     </div>
                 ))}
             </div>
