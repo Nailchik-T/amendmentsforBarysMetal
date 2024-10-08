@@ -1,11 +1,11 @@
 import React, {useState} from "react";
 import {Link} from "wouter";
 
-import {Button, ContentTemplate, Icon} from "@shared/ui";
 import {useCartStore} from "@entities/cart";
+import {Product} from "@entities/product";
 import {BACKEND_URL} from "@shared/config";
 import {format} from "@shared/lib/format";
-import {Product} from "@entities/product";
+import {Button, ContentTemplate, Icon} from "@shared/ui";
 
 export const CartPage: React.FC = () => {
     const [selectedItemsId, setSelectedItemsId] = useState<

@@ -2,14 +2,15 @@ import {Link} from "wouter";
 
 import {Button, ContentTemplate, Icon, Slider} from "@shared/ui";
 
+import {useAllCategories} from "@entities/category";
+import catalogue from "@shared/assets/catalogue.png";
 import safe from "@shared/assets/safe.png";
 import shelf from "@shared/assets/shelf.png";
 import toolkit from "@shared/assets/toolkit.png";
-import catalogue from "@shared/assets/catalogue.png";
-import {useAllCategories} from "@entities/category";
 import {BACKEND_URL} from "@shared/config.ts";
+import {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
-import {useEffect} from "react";
+import DialogModal from "src/components/Dialog/Dialog";
 
 export const HomePage: React.FC = () => {
     const {allCategories} = useAllCategories();
@@ -83,6 +84,9 @@ export const HomePage: React.FC = () => {
 };
 
 const SliderSection: React.FC = () => {
+    const [isInquiryModalOpen, setIsInquiryModalOpen] = useState(false);
+    const openModal = () => setIsInquiryModalOpen(true);
+
     return (
         <Slider
             slidesToShow={1}
@@ -100,13 +104,17 @@ const SliderSection: React.FC = () => {
                     <p className="text-lg  md:text-[16px]">
                         Ваш надежный партнер в мире металлических изделий
                     </p>
-
                     <Button
+                        onClick={openModal}
                         view="reversed"
                         className="w-fit text-lg md:hidden "
                     >
                         Заказать сейчас
                     </Button>
+                    <DialogModal
+                        isInquiryModalOpen={isInquiryModalOpen}
+                        setIsInquiryModalOpen={setIsInquiryModalOpen}
+                    />
                 </div>
 
                 <div className="flex items-center mt-12 md:mt-1 md:justify-center sm:ml-32  lg:justify-center ">
@@ -135,11 +143,16 @@ const SliderSection: React.FC = () => {
                     </div>
                 </div>
                 <Button
+                    onClick={openModal}
                     view="reversed"
-                    className="w-fit text-lg hidden md:block "
+                    className="w-fit text-lg hidden md:block  "
                 >
                     Заказать сейчас
                 </Button>
+                <DialogModal
+                    isInquiryModalOpen={isInquiryModalOpen}
+                    setIsInquiryModalOpen={setIsInquiryModalOpen}
+                />
             </div>
 
             <div className="!flex justify-between bg-primary-contrast text-primary w-full h-[28rem]  p-12 lg:p-1  md:flex-col lg:justify-around  md:items-center ">
@@ -153,11 +166,16 @@ const SliderSection: React.FC = () => {
                     </p>
 
                     <Button
+                        onClick={openModal}
                         view="reversed"
-                        className="w-fit text-lg md:hidden "
+                        className="w-fit text-lg md:hidden bg-primary text-primary-contrast "
                     >
                         Заказать сейчас
                     </Button>
+                    <DialogModal
+                        isInquiryModalOpen={isInquiryModalOpen}
+                        setIsInquiryModalOpen={setIsInquiryModalOpen}
+                    />
                 </div>
 
                 <div className="flex items-center mt-12 md:mt-1 md:justify-center  sm:ml-32 lg:justify-center ">
@@ -186,11 +204,17 @@ const SliderSection: React.FC = () => {
                     </div>
                 </div>
                 <Button
+                    onClick={openModal}
                     view="reversed"
-                    className="w-fit text-lg hidden md:block "
+                    className="w-fit text-lg hidden md:block bg-primary text-primary-contrast "
                 >
                     Заказать сейчас
                 </Button>
+
+                <DialogModal
+                    isInquiryModalOpen={isInquiryModalOpen}
+                    setIsInquiryModalOpen={setIsInquiryModalOpen}
+                />
             </div>
 
             <div className="!flex justify-between bg-primary-contrast text-primary w-full h-[28rem]  p-12 lg:p-0  md:flex-col lg:justify-around  md:items-center ">
@@ -202,13 +226,18 @@ const SliderSection: React.FC = () => {
                     <p className="text-lg  md:text-[16px]">
                         От мелочей до масштабных проектов – все из металла
                     </p>
-
                     <Button
+                        onClick={openModal}
                         view="reversed"
-                        className="w-fit text-lg md:hidden "
+                        className="w-fit text-lg md:hidden bg-primary text-primary-contrast "
                     >
                         Заказать сейчас
                     </Button>
+
+                    <DialogModal
+                        isInquiryModalOpen={isInquiryModalOpen}
+                        setIsInquiryModalOpen={setIsInquiryModalOpen}
+                    />
                 </div>
 
                 <div className="flex items-center mt-12 md:mt-1 md:justify-center  sm:ml-32 lg:justify-center ">
@@ -236,12 +265,17 @@ const SliderSection: React.FC = () => {
                         </div>
                     </div>
                 </div>
+
                 <Button
                     view="reversed"
-                    className="w-fit text-lg hidden md:block "
+                    className="w-fit text-lg hidden md:block bg-primary text-primary-contrast "
                 >
                     Заказать сейчас
                 </Button>
+                <DialogModal
+                    isInquiryModalOpen={isInquiryModalOpen}
+                    setIsInquiryModalOpen={setIsInquiryModalOpen}
+                />
             </div>
         </Slider>
     );

@@ -1,10 +1,10 @@
 import {useForm} from "react-hook-form";
 
-import {CmsTemplate} from "@features/cms";
-import {Button} from "@shared/ui";
-import {useCreateProduct} from "@features/cms/entities/product";
 import {Category, useAllCategories, useCategory} from "@entities/category";
 import {Subcategory} from "@entities/subcategory";
+import {CmsTemplate} from "@features/cms";
+import {useCreateProduct} from "@features/cms/entities/product";
+import {Button} from "@shared/ui";
 import {useNavigate} from "react-router-dom";
 
 export const CreatePage: React.FC = () => {
@@ -59,9 +59,9 @@ export const CreatePage: React.FC = () => {
                         description: form.description,
                         file: form.files[0],
                         categoryId: Number(form.categoryId),
-                        subCategoryId: Number(form.subcategoryId)
-                            ? Number(form.subcategoryId)
-                            : null,
+                        ...(form.subcategoryId && {
+                            subcategoryId: Number(form.subcategoryId),
+                        }),
                         productProperties: [
                             form.property1,
                             form.property2,
@@ -152,9 +152,7 @@ export const CreatePage: React.FC = () => {
                 <label className="flex gap-2">
                     Подкатегория
                     <select
-                        {...register("subcategoryId", {
-                            required: true,
-                        })}
+                        {...register("subcategoryId", {})}
                         className="border"
                     >
                         <option value="" disabled selected>

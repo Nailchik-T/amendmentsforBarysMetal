@@ -1,7 +1,7 @@
-import {Link} from "wouter";
-import {BACKEND_URL} from "@shared/config.ts";
 import {useAllCategories} from "@entities/category";
+import {BACKEND_URL} from "@shared/config.ts";
 import {ContentTemplate} from "@shared/ui";
+import {Link} from "wouter";
 
 export const Categories = () => {
     const {allCategories} = useAllCategories();

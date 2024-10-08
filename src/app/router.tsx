@@ -1,27 +1,39 @@
-import {Switch, Route, Router as Wouter} from "wouter";
+import {Route, Switch, Router as Wouter} from "wouter";
 
 import {
-    HomePage,
-    ListPage,
-    CataloguePage,
-    ProductPage,
-    CartPage,
-    OrderPage,
     AboutPage,
-    TermsPage,
-    OrderAndDeliveryPage,
+    CartPage,
+    CataloguePage,
+    Categories,
     CertificatesPage,
     CmsRouter,
+    HomePage,
+    ListPage,
+    OrderAndDeliveryPage,
+    OrderPage,
     OrderSuccess,
-    Categories,
+    ProductPage,
+    TermsPage,
 } from "@pages/index";
-import {BrowserRouter} from "react-router-dom";
+import {useEffect} from "react";
+import {BrowserRouter, useLocation} from "react-router-dom";
+
+const ScrollToTop = () => {
+    const {pathname} = useLocation();
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [pathname]);
+
+    return null;
+};
 
 export const Router: React.FC = () => {
     return (
         <Wouter>
             <Switch>
                 <BrowserRouter>
+                    <ScrollToTop />
                     <Route path="/" component={HomePage} />
                     <Route path="/list" component={ListPage} />
                     <Route

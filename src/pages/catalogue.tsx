@@ -45,21 +45,21 @@ const SubcategoriesList: React.FC<{
     subcategories: Subcategory[];
 }> = ({category, subcategories}) => {
     return (
-        <div className="flex flex-wrap gap-8 sm:justify-center ">
+        <div className="flex flex-wrap gap-4 sm:justify-center ">
             {subcategories.map((subcategory, idx) => (
                 <Link
                     key={idx}
                     to={`/catalogue?categoryId=${category.id}&subcategoryId=${subcategory.id}`}
-                    className={"w-[360px]"}
+                    className={"w-[270px]"}
                 >
-                    <div className="min-w-[320px] max-h-[320px] h-full flex flex-col justify-between items-center border border-paper-contrast/25 rounded-lg gap-y-4 p-6">
-                        <div className="flex justify-center items-center gap-x-2 min-w-[320px]">
+                    <div className="w-[270px] h-[320px] flex flex-col justify-between items-center border border-paper-contrast/25 rounded-lg p-6">
+                        <div className="flex justify-center items-center ">
                             {Array.from({length: 3}).map((_, idx) => (
                                 <img
                                     key={idx}
                                     src={`${BACKEND_URL}${subcategory.photoPath}`}
                                     alt="Фотка"
-                                    className="w-1/3 object-contain"
+                                    className="w-20 h-56 object-contain"
                                 />
                             ))}
                         </div>
@@ -138,6 +138,7 @@ const CategoryCatalogue: React.FC<{
             ]}
             className="flex flex-col gap-4"
         >
+            <Features />
             <Branch if={showSubcategories}>
                 <div className="flex flex-col gap-8">
                     <h2 className="font-semibold text-3xl">{category?.name}</h2>
@@ -219,7 +220,7 @@ const ProductsList: React.FC<{
                 </div>
             </div>
 
-            <div className="flex flex-wrap gap-10 -m-2 justify-start sm:justify-center">
+            <div className="flex flex-wrap gap-10 p-3 -m-2 justify-start sm:justify-center">
                 {sortProducts().map((product) => {
                     const isInCart = cart.some(
                         (i) => i.product.id === product.id,
@@ -231,7 +232,7 @@ const ProductsList: React.FC<{
                             to={`/products/${product.id}`}
                             className="w-[270px]"
                         >
-                            <div className="flex flex-col h-full gap-4 bg-paper-primary shadow-even-md rounded-lg p-4 ">
+                            <div className="flex flex-col h-full gap-4 bg-white shadow-[0_4px_16px_0px_#293E8014] rounded-2xl p-4  ">
                                 <div className="w-full h-52">
                                     <img
                                         src={`${BACKEND_URL}${product.photoPath}`}

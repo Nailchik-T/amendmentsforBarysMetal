@@ -1,20 +1,22 @@
-import {useState} from "react";
 import * as RXTabs from "@radix-ui/react-tabs";
+import {useState} from "react";
 import {Link, useParams} from "wouter";
 
-import {Button, ContentTemplate} from "@shared/ui";
-import kaspi from "@shared/assets/kaspi.png";
-import {useProduct} from "@entities/product";
-import {BACKEND_URL} from "@shared/config";
-import {format} from "@shared/lib/format";
 import {useCartStore} from "@entities/cart";
+import {useProduct} from "@entities/product";
+import kaspi from "@shared/assets/kaspi.png";
+import {BACKEND_URL} from "@shared/config";
 import {Branch} from "@shared/lib/branch";
+import {format} from "@shared/lib/format";
+import {Button, ContentTemplate, Icon} from "@shared/ui";
+import {useNavigate} from "react-router-dom";
 
 enum ProductTab {
     CHARACTERISTICS,
 }
 
 export const ProductPage: React.FC = () => {
+    const navigate = useNavigate();
     const {productId} = useParams() as {productId: string};
 
     const {product} = useProduct({
@@ -48,25 +50,26 @@ export const ProductPage: React.FC = () => {
                 },
             ]}
         >
-            <div className="flex flex-col gap-6 ">
-                <div className="flex gap-12 flex-wrap sm:items-center ">
+            <div className="flex flex-col flex-wrap gap-6 ">
+                <div className="flex gap-12 sm:gap-3 sm:flex-col sm:items-center ">
                     <img
                         src={`${BACKEND_URL}${product.photoPath}`}
                         alt="Фотка"
-                        className="max-w-72 max-h-72"
+                        className="min-w-56 h-72 object-center "
                     />
 
                     <div className="flex flex-col gap-8">
-                        <h1 className="text-3xl font-semibold text-primary">
+                        <h1 className="font-semibold text-primary text-base md:text-[16px] lg:text-[16px] xl:text-2xl text-wrap break-words">
                             {product.name}
                         </h1>
-                        Производитель: Paks Metal
+
                         <div className="flex flex-col gap-6">
                             <div className="flex flex-col gap-2">
+                                <p>Производитель: Paks Metal</p>
                                 {product.properties.map((property) => (
                                     <div
                                         key={property.key}
-                                        className="inline overflow-hidden text-ellipsis whitespace-nowrap"
+                                        className="inline overflow-hidden text-ellipsis"
                                     >
                                         <span className="text-paper-contrast/70">
                                             {property.key}:{" "}
@@ -78,13 +81,32 @@ export const ProductPage: React.FC = () => {
                                     </div>
                                 ))}
                             </div>
+                            <div className="flex justify-between items-center sm:border-t-[1px] sm:border-gray-400 sm:pt-4">
+                                <span className="text-primary font-bold text-xl sm:text-[14px]">
+                                    {format.number(product.price).toLowerCase()}{" "}
+                                    тг
+                                </span>
+                                <Button className="hidden items-center gap-3 bg-transparent  py-2 px-6  text-paper-contrast  sm:flex">
+                                    <img
+                                        src={kaspi}
+                                        alt="Каспи"
+                                        className="w-5 h-auto"
+                                    />
 
-                            <span className="text-primary font-bold text-xl">
-                                {format.number(product.price)} тг
-                            </span>
+                                    <span className="font-semibold text-sm text-gray-300 text-[10px]">
+                                        В рассрочку
+                                    </span>
+                                    <span className="text-[12px] text-primary">
+                                        {Math.floor(
+                                            product.price / 12,
+                                        ).toLocaleString("ru-RU")}{" "}
+                                        x 12 мес.
+                                    </span>
+                                </Button>
+                            </div>
 
                             {!inCart && (
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-4 sm:hidden">
                                     <button
                                         onClick={() => {
                                             setQuantity(
@@ -111,12 +133,43 @@ export const ProductPage: React.FC = () => {
                                 </div>
                             )}
 
-                            <div className="flex flex-col gap-3">
-                                <div className="flex gap-2">
+                            <div className="hidden sm:flex fixed bottom-0 left-0 gap-2 h-16 px-5 items-center bg-primary-contrast justify-between w-full shadow-[0_4px_16px_20px_#293E8014] rounded-lg ">
+                                <Branch if={inCart}>
+                                    <Link to="/cart">
+                                        <Button className="py-3 flex items-center text-sm border-primary border bg-transparent text-primary max-h-10">
+                                            Уже в корзине
+                                        </Button>
+                                    </Link>
+
+                                    <Button
+                                        onClick={() => {
+                                            addProduct(product, quantity);
+                                        }}
+                                        className="py-3 text-sm flex border-primary border items-center gap-2 bg-primary-contrast max-h-10"
+                                    >
+                                        <Icon.Cart className="text-primary" />
+                                        <span className="text-primary">
+                                            В корзину
+                                        </span>{" "}
+                                    </Button>
+                                </Branch>
+                                <Button
+                                    onClick={() => {
+                                        addProduct(product, quantity);
+                                        navigate("/cart");
+                                    }}
+                                    className="text-[12px] py-3 bg-primary text-primary-contrast max-h-10"
+                                >
+                                    Купить cразу
+                                </Button>
+                            </div>
+
+                            <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:border-t-gray-300  sm:hidden ">
+                                <div className="flex gap-2 items-center">
                                     <Branch if={inCart}>
                                         <Link to="/cart">
                                             <Button className="py-3 text-sm border-primary border bg-transparent text-primary">
-                                                Уже в корзине (
+                                                Перейти в корзину (
                                                 {cartItem?.quantity})
                                             </Button>
                                         </Link>
@@ -127,13 +180,19 @@ export const ProductPage: React.FC = () => {
                                             }}
                                             className="py-3 text-sm"
                                         >
-                                            В корзину
+                                            Добавить в корзину{" "}
                                         </Button>
                                     </Branch>
-
-                                    {/* <button className="aspect-square h-full p-3 border border-primary rounded-lg">
-                                        <Icon.Cart className="w-full h-auto text-primary" />
-                                    </button> */}
+                                    <button
+                                        onClick={() => {
+                                            cartItem
+                                                ? navigate("/cart")
+                                                : addProduct(product, quantity);
+                                        }}
+                                        className="py-3 text-sm"
+                                    >
+                                        <Icon.Cart className="w-full h-auto py-3 text-sm border-primary border bg-transparent text-primary rounded-md p-2" />
+                                    </button>
                                 </div>
 
                                 <a
@@ -145,12 +204,18 @@ export const ProductPage: React.FC = () => {
                                         <img
                                             src={kaspi}
                                             alt="Каспи"
-                                            className="w-7 h-auto"
+                                            className="w-7 h-auto s"
                                         />
 
-                                        <div className="flex flex-col justify-between items-start">
+                                        <div className="flex flex-col justify-between items-start ">
                                             <span className="font-semibold text-sm">
                                                 В рассрочку
+                                            </span>
+                                            <span className="text-[12px]">
+                                                {Math.floor(
+                                                    product.price / 12,
+                                                ).toLocaleString("ru-RU")}{" "}
+                                                x 12 мес.
                                             </span>
                                         </div>
                                     </Button>
