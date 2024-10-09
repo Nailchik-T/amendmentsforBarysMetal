@@ -151,8 +151,6 @@ const CategoryCatalogue: React.FC<{
 
                 <>
                     <div className="flex flex-col gap-8">
-                        <Features />
-
                         <h2 className="font-semibold text-3xl">
                             {category?.name}
                         </h2>

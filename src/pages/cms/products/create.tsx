@@ -48,7 +48,6 @@ export const CreatePage: React.FC = () => {
     const {category} = useCategory({
         id: categoryId,
     });
-
     return (
         <CmsTemplate title="Создание товара">
             <form
@@ -68,7 +67,10 @@ export const CreatePage: React.FC = () => {
                             form.property3,
                             form.property4,
                             form.property5,
-                        ],
+                        ].filter(
+                            (property) =>
+                                property.key !== "" && property.value !== "",
+                        ),
                         kaspi: form.kaspi,
                     }).then(() => {
                         navigate("/cms/products");
