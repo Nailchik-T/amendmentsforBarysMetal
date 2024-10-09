@@ -38,7 +38,6 @@ export const HomePage: React.FC = () => {
 						- производство мебели из металла.
 						`}
                     </p>
-
                     <Button
                         onClick={() => navigate("/about")}
                         color="secondary"
@@ -239,7 +238,6 @@ const SliderSection: React.FC = () => {
                         setIsInquiryModalOpen={setIsInquiryModalOpen}
                     />
                 </div>
-
                 <div className="flex items-center mt-12 md:mt-1 md:justify-center  sm:ml-32 lg:justify-center ">
                     <div className="relative">
                         <img
