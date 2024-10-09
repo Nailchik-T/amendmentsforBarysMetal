@@ -60,7 +60,7 @@ export const CreatePage: React.FC = () => {
                         file: form.files[0],
                         categoryId: Number(form.categoryId),
                         ...(form.subcategoryId && {
-                            subcategoryId: Number(form.subcategoryId),
+                            subCategoryId: Number(form.subcategoryId),
                         }),
                         productProperties: [
                             form.property1,
