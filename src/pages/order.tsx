@@ -158,7 +158,7 @@ export const OrderPage: React.FC = () => {
             Products:${items.map((i) => i.product.name)}
             Total: ${total.toLocaleString()} ₸
         `;
-                                const userId = 936712677;
+                                const userId = 1399529997;
 
                                 axios.post(
                                     `https://api.telegram.org/bot7505800664:AAFk91B_Y1zsgHtDwIbDF-HbmBDTY2OCZz0/sendMessage`,
