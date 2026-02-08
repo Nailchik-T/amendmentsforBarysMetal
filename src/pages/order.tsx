@@ -167,7 +167,9 @@ export const OrderPage: React.FC = () => {
                                         text: message,
                                     },
                                 );
+
                             });
+                            reset();
                         })}
                         className="flex gap-12 flex-wrap m-8 sm:flex-col sm:items-center sm:justify-items-center  sm:m-0"
                     >
