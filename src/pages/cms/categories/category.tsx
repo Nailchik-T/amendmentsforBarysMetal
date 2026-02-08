@@ -67,13 +67,7 @@ export const CategoryPage: React.FC = () => {
                 />
 
                 <div className="flex gap-2">
-                    <Button
-                        className="mt-2 w-fit"
-                        size="small"
-                        disabled={!formState.isValid}
-                    >
-                        Редактировать
-                    </Button>
+
 
                     <Button
                         onClick={handleDeleteProduct}

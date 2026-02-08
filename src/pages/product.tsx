@@ -33,6 +33,11 @@ export const ProductPage: React.FC = () => {
 
     const inCart = !!cartItem;
 
+    const formatExternalUrl = (url) => {
+        if (!url) return '#';
+        return url.startsWith('http') ? url : `https://${url}`;
+    };
+
     return (
         <ContentTemplate
             breadcrumbs={[
@@ -196,8 +201,9 @@ export const ProductPage: React.FC = () => {
                                 </div>
 
                                 <a
-                                    href={product.kaspi}
+                                    href={formatExternalUrl(product.kaspi)}
                                     target="_blank"
+                                    rel="noopener noreferrer"
                                     className="w-fit"
                                 >
                                     <Button className="inline-flex items-center gap-4 bg-transparent border rounded-lg py-2 px-6 border-[#f14635] text-paper-contrast">

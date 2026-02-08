@@ -153,8 +153,7 @@ export const OrderPage: React.FC = () => {
             Order ID: ${res.data.id}
             Recipient: ${form.recipient.fullName}
             Phone: ${form.recipient.phone}
-           Delivery Method: ${deliveryMethods[form.delivery.method]} // Получаем текст из объекта
-
+            Delivery Method: ${deliveryMethods[form.delivery.method]}
             Address: ${form.delivery.address}
             Products:${items.map((i) => i.product.name)}
             Total: ${total.toLocaleString()} ₸
@@ -162,7 +161,7 @@ export const OrderPage: React.FC = () => {
                                 const userId = 936712677;
 
                                 axios.post(
-                                    `https://api.telegram.org/bot7505800664:AAE_2m2DhqrIR4QlORey9WGsh3kqCi4mKnA/sendMessage`,
+                                    `https://api.telegram.org/bot7505800664:AAFk91B_Y1zsgHtDwIbDF-HbmBDTY2OCZz0/sendMessage`,
                                     {
                                         chat_id: userId,
                                         text: message,

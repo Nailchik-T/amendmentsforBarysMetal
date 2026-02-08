@@ -38,10 +38,6 @@ export const CmsTemplate: React.FC<CmsTemplateProps> = ({
                             label: "Товары",
                             link: "~/cms/products",
                         },
-                        {
-                            label: "Заявки",
-                            link: "~/cms/inquiries",
-                        },
                     ].map(({label, link}) => (
                         <Link
                             href={link}
