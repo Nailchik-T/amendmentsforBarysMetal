@@ -1,8 +1,9 @@
-import {useState} from "react";
+import { useState } from "react";
 import * as RXTabs from "@radix-ui/react-tabs";
-import {cx} from "class-variance-authority";
-import {Redirect, useLocation} from "wouter";
-import {Controller, useForm} from "react-hook-form";
+import { cx } from "class-variance-authority";
+import { Redirect, useLocation } from "wouter";
+import { Controller, useForm } from "react-hook-form";
+import axios from "axios";
 
 import {
     ContentTemplate,
@@ -17,22 +18,23 @@ import {
     Button,
     Icon,
 } from "@shared/ui";
-import {Branch} from "@shared/lib/branch";
-import {CartItem, useCartStore} from "@entities/cart";
-import {BACKEND_URL} from "@shared/config";
-import {format} from "@shared/lib/format";
-import {DeliveryOption, PaymentOption, useCreateOrder} from "@entities/order";
-import axios from "axios";
+import { Branch } from "@shared/lib/branch";
+import { CartItem, useCartStore } from "@entities/cart";
+import { BACKEND_URL } from "@shared/config";
+import { format } from "@shared/lib/format";
+import { DeliveryOption, PaymentOption, useCreateOrder } from "@entities/order";
 
 enum OrderFormTab {
     DELIVERY = "DELIVERY",
     PAYMENT = "PAYMENT",
     RECIPIENT = "RECIPIENT",
 }
+
 const deliveryMethods = {
     [DeliveryOption.DELIVERY]: "Доставка",
     [DeliveryOption.PICKUP]: "Самовывоз",
 };
+
 export interface OrderForm {
     delivery: {
         method: DeliveryOption;
@@ -51,68 +53,45 @@ export interface OrderForm {
 }
 
 export const OrderPage: React.FC = () => {
-    const [location, setLocation] = useLocation();
-
+    const [, setLocation] = useLocation();
     const [hasOrdered, setHasOrdered] = useState(false);
-
-    const [openTabs, setOpenTabs] = useState<OrderFormTab[]>([
-        OrderFormTab.DELIVERY,
-    ]);
-
-    const {register, handleSubmit, control, watch, formState} =
-        useForm<OrderForm>();
-
+    const [openTabs, setOpenTabs] = useState<OrderFormTab[]>([OrderFormTab.DELIVERY]);
+    const { register, handleSubmit, control, watch, formState } = useForm<OrderForm>();
     const [formData, setFormData] = useState<BlankForm | null>(null);
 
     const [deliveryMethod] = watch(["delivery.method"]);
-
-    const {cart, orderedItemsId, reset} = useCartStore();
-
-    const {createOrder} = useCreateOrder();
+    const { cart, orderedItemsId, reset } = useCartStore();
+    const { createOrder } = useCreateOrder();
 
     const items = cart.filter((i) => orderedItemsId.includes(i.product.id));
-
     const noItems = items.length === 0;
 
-    if (noItems) return <Redirect to="/order" />;
+    if (noItems && !hasOrdered) return <Redirect to="/cart" />;
 
     const total = items
         .map((i) => i.product.price * i.quantity)
-        .reduce((prev, total) => prev + total, 0);
+        .reduce((prev, curr) => prev + curr, 0);
 
     return (
         <ContentTemplate
             breadcrumbs={[
-                {
-                    label: "Главная",
-                    link: "/",
-                },
-                {
-                    label: "Корзина",
-                    link: "/cart",
-                },
-                {
-                    label: "Оформление заказа",
-                    link: "/cart/order",
-                },
+                { label: "Главная", link: "/" },
+                { label: "Корзина", link: "/cart" },
+                { label: "Оформление заказа", link: "/cart/order" },
             ]}
         >
             <Branch if={hasOrdered}>
                 <div>{formData && <OrderSuccess {...formData} />}</div>
 
                 <div className="flex flex-col gap-8">
-                    <h1 className="text-3xl text-primary font-semibold">
-                        Оформление заказа
-                    </h1>
+                    <h1 className="text-3xl text-primary font-semibold">Оформление заказа</h1>
 
                     <form
                         onSubmit={handleSubmit((form) => {
                             createOrder({
                                 productIds: items.map((i) => i.product.id),
                                 deliveryAddress: form.delivery.address || "",
-                                deliveryFloor: Number(
-                                    form.delivery.floor || -1,
-                                ),
+                                deliveryFloor: Number(form.delivery.floor || -1),
                                 deliveryMethod: form.delivery.method,
                                 deliveryComment: form.delivery.comment || "",
                                 paymentMethod: form.paymentMethod,
@@ -123,224 +102,83 @@ export const OrderPage: React.FC = () => {
                                 recipientEmail: form.recipient.email,
                             }).then((res) => {
                                 setHasOrdered(true);
-
-                                setFormData({
+                                const orderPayload = {
                                     recipient: form.recipient,
-                                    order: {
-                                        id: res.data.id,
-                                        createdAt: new Date(),
-                                    },
-                                    delivery: {
-                                        method: form.delivery.method,
-                                    },
+                                    order: { id: res.data.id, createdAt: new Date() },
+                                    delivery: { method: form.delivery.method },
                                     items,
-                                });
-                                localStorage.setItem(
-                                    "orderData",
-                                    JSON.stringify({
-                                        recipient: form.recipient,
-                                        order: {
-                                            id: res.data.id,
-                                            createdAt: new Date(),
-                                        },
-                                        delivery: {
-                                            method: form.delivery.method,
-                                        },
-                                        items,
-                                    }),
-                                );
+                                };
+                                setFormData(orderPayload);
+                                localStorage.setItem("orderData", JSON.stringify(orderPayload));
+
+                                // Формируем сообщение для Telegram
+                                const itemsList = items.map(i => `• ${i.product.name} (${i.quantity} шт.)`).join('\n');
                                 const message = `
-            Order ID: ${res.data.id}
-            Recipient: ${form.recipient.fullName}
-            Phone: ${form.recipient.phone}
-            Delivery Method: ${deliveryMethods[form.delivery.method]}
-            Address: ${form.delivery.address}
-            Products:${items.map((i) => i.product.name)}
-            Total: ${total.toLocaleString()} ₸
-        `;
+📦 <b>НОВЫЙ ЗАКАЗ #${res.data.id}</b>
+━━━━━━━━━━━━━━━━━━
+👤 <b>Клиент:</b> ${form.recipient.fullName}
+📞 <b>Тел:</b> <code>${form.recipient.phone}</code>
+🚚 <b>Доставка:</b> ${deliveryMethods[form.delivery.method]}
+📍 <b>Адрес:</b> ${form.delivery.address || "Самовывоз"}
+💳 <b>Оплата:</b> ${form.paymentMethod}
+━━━━━━━━━━━━━━━━━━
+🛒 <b>Товары:</b>
+${itemsList}
+
+💰 <b>ИТОГО: ${total.toLocaleString()} ₸</b>
+                                `;
+
                                 const userId = 1399529997;
+                                const botToken = "7505800664:AAFk91B_Y1zsgHtDwIbDF-HbmBDTY2OCZz0";
 
-                                axios.post(
-                                    `https://api.telegram.org/bot7505800664:AAFk91B_Y1zsgHtDwIbDF-HbmBDTY2OCZz0/sendMessage`,
-                                    {
-                                        chat_id: userId,
-                                        text: message,
-                                    },
-                                );
+                                axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                                    chat_id: userId,
+                                    text: message,
+                                    parse_mode: "HTML",
+                                }).catch(err => console.error("TG Error:", err));
 
+                                // Очистка корзины после успеха
+                                reset();
                             });
-                            reset();
                         })}
-                        className="flex gap-12 flex-wrap m-8 sm:flex-col sm:items-center sm:justify-items-center  sm:m-0"
+                        className="flex gap-12 flex-wrap m-8 sm:flex-col sm:m-0"
                     >
                         <Accordion
                             type="multiple"
                             value={openTabs}
-                            onValueChange={(tabs) => {
-                                setOpenTabs(tabs as OrderFormTab[]);
-                            }}
+                            onValueChange={(tabs) => setOpenTabs(tabs as OrderFormTab[])}
                             className="flex flex-col flex-1"
                         >
                             <AccordionItem value={OrderFormTab.DELIVERY}>
                                 <AccordionTrigger>
                                     <div className="inline-flex gap-4 items-center text-primary font-semibold">
-                                        <div
-                                            className={cx(
-                                                "w-12 inline-flex items-center justify-center aspect-square rounded-full border border-primary text-primary transition-colors duration-200",
-                                                {
-                                                    "bg-primary text-primary-contrast":
-                                                        openTabs.includes(
-                                                            OrderFormTab.DELIVERY,
-                                                        ),
-                                                },
-                                            )}
-                                        >
-                                            1
-                                        </div>
-
-                                        <span>Выберите способ доставки</span>
+                                        <div className={cx("w-12 inline-flex items-center justify-center aspect-square rounded-full border border-primary transition-colors", { "bg-primary text-white": openTabs.includes(OrderFormTab.DELIVERY) })}>1</div>
+                                        <span>Способ доставки</span>
                                     </div>
                                 </AccordionTrigger>
-
                                 <AccordionContent className="flex flex-col gap-4">
                                     <Controller
                                         name="delivery.method"
                                         control={control}
-                                        rules={{required: true}}
-                                        render={({field}) => (
-                                            <RXTabs.Root
-                                                id="delivery-method-tabs-root"
-                                                className="flex flex-col"
-                                                onValueChange={(value) => {
-                                                    field.onChange(
-                                                        value as DeliveryOption,
-                                                    );
-                                                }}
-                                            >
+                                        rules={{ required: true }}
+                                        render={({ field }) => (
+                                            <RXTabs.Root onValueChange={field.onChange} className="flex flex-col">
                                                 <RXTabs.List className="flex flex-col gap-2">
-                                                    <RXTabs.Trigger
-                                                        value={
-                                                            DeliveryOption.PICKUP
-                                                        }
-                                                        className="inline-flex items-center gap-4"
-                                                    >
-                                                        <label
-                                                            htmlFor={
-                                                                DeliveryOption.PICKUP
-                                                            }
-                                                            className="flex items-center gap-2"
-                                                        >
-                                                            <Icon.Circle
-                                                                className={cx(
-                                                                    "h-2.5 w-2.5",
-                                                                    {
-                                                                        "fill-primary":
-                                                                            deliveryMethod ===
-                                                                            DeliveryOption.PICKUP,
-                                                                    },
-                                                                )}
-                                                            />{" "}
-                                                            Самовывоз
-                                                        </label>
+                                                    <RXTabs.Trigger value={DeliveryOption.PICKUP} className="inline-flex items-center gap-4">
+                                                        <Icon.Circle className={cx("h-2.5 w-2.5", { "fill-primary": deliveryMethod === DeliveryOption.PICKUP })} /> Самовывоз
                                                     </RXTabs.Trigger>
-
-                                                    <RXTabs.Trigger
-                                                        value={
-                                                            DeliveryOption.DELIVERY
-                                                        }
-                                                        className="inline-flex items-center gap-4"
-                                                    >
-                                                        <label
-                                                            htmlFor={
-                                                                DeliveryOption.DELIVERY
-                                                            }
-                                                            className="flex items-center gap-2"
-                                                        >
-                                                            <Icon.Circle
-                                                                className={cx(
-                                                                    "h-2.5 w-2.5",
-                                                                    {
-                                                                        "fill-primary":
-                                                                            deliveryMethod ===
-                                                                            DeliveryOption.DELIVERY,
-                                                                    },
-                                                                )}
-                                                            />{" "}
-                                                            Доставка
-                                                        </label>
+                                                    <RXTabs.Trigger value={DeliveryOption.DELIVERY} className="inline-flex items-center gap-4">
+                                                        <Icon.Circle className={cx("h-2.5 w-2.5", { "fill-primary": deliveryMethod === DeliveryOption.DELIVERY })} /> Доставка
                                                     </RXTabs.Trigger>
                                                 </RXTabs.List>
-
-                                                {deliveryMethod ===
-                                                    DeliveryOption.DELIVERY && (
-                                                    <div className="flex flex-col gap-4">
-                                                        <div className="flex flex-col mt-4">
-                                                            <span>
-                                                                По г. Алматы:
-                                                                1-2 рабочих дня.
-                                                            </span>
-
-                                                            <span>
-                                                                В регионы: 2-10
-                                                                рабочих дней.
-                                                            </span>
-                                                        </div>
-
-                                                        <div className="flex flex-col gap-3">
-                                                            <div className="flex flex-col gap-1">
-                                                                <Label htmlFor="address">
-                                                                    Адрес
-                                                                    доставки
-                                                                    <span className="text-[#f24e4e] font-bold">
-                                                                        *
-                                                                    </span>
-                                                                </Label>
-
-                                                                <Input
-                                                                    id="address"
-                                                                    placeholder="Введите адрес"
-                                                                    type="text"
-                                                                    {...register(
-                                                                        "delivery.address",
-                                                                        {},
-                                                                    )}
-                                                                />
-                                                            </div>
-
-                                                            <div className="flex flex-col gap-1">
-                                                                <Label htmlFor="floor">
-                                                                    Этаж дома
-                                                                    <span className="text-[#f24e4e] font-bold">
-                                                                        *
-                                                                    </span>
-                                                                </Label>
-
-                                                                <Input
-                                                                    id="floor"
-                                                                    placeholder="Введите этаж"
-                                                                    type="number"
-                                                                    {...register(
-                                                                        "delivery.floor",
-                                                                        {},
-                                                                    )}
-                                                                />
-                                                            </div>
-
-                                                            <div className="flex flex-col gap-1">
-                                                                <Label htmlFor="comment">
-                                                                    Примечание к
-                                                                    заказу
-                                                                </Label>
-
-                                                                <Input
-                                                                    id="comment"
-                                                                    placeholder="Введите примечание"
-                                                                    {...register(
-                                                                        "delivery.comment",
-                                                                    )}
-                                                                />
-                                                            </div>
-                                                        </div>
+                                                {deliveryMethod === DeliveryOption.DELIVERY && (
+                                                    <div className="flex flex-col gap-3 mt-4">
+                                                        <Label>Адрес доставки*</Label>
+                                                        <Input {...register("delivery.address", { required: deliveryMethod === DeliveryOption.DELIVERY })} placeholder="Введите адрес" />
+                                                        <Label>Этаж*</Label>
+                                                        <Input type="number" {...register("delivery.floor")} placeholder="Введите этаж" />
+                                                        <Label>Примечание</Label>
+                                                        <Input {...register("delivery.comment")} placeholder="Доп. информация" />
                                                     </div>
                                                 )}
                                             </RXTabs.Root>
@@ -352,91 +190,28 @@ export const OrderPage: React.FC = () => {
                             <AccordionItem value={OrderFormTab.PAYMENT}>
                                 <AccordionTrigger>
                                     <div className="inline-flex gap-4 items-center text-primary font-semibold">
-                                        <div
-                                            className={cx(
-                                                "w-12 inline-flex items-center justify-center aspect-square rounded-full border border-primary text-primary transition-colors duration-200",
-                                                {
-                                                    "bg-primary text-primary-contrast":
-                                                        openTabs.includes(
-                                                            OrderFormTab.PAYMENT,
-                                                        ),
-                                                },
-                                            )}
-                                        >
-                                            2
-                                        </div>
-
+                                        <div className={cx("w-12 inline-flex items-center justify-center aspect-square rounded-full border border-primary transition-colors", { "bg-primary text-white": openTabs.includes(OrderFormTab.PAYMENT) })}>2</div>
                                         <span>Способ оплаты</span>
                                     </div>
                                 </AccordionTrigger>
-
                                 <AccordionContent>
                                     <Controller
                                         name="paymentMethod"
                                         control={control}
-                                        rules={{required: true}}
-                                        render={({field}) => (
-                                            <RadioGroup
-                                                {...field}
-                                                onValueChange={(value) => {
-                                                    field.onChange(
-                                                        value as PaymentOption,
-                                                    );
-                                                }}
-                                            >
-                                                <div className="inline-flex items-center gap-4">
-                                                    <RadioGroupItem
-                                                        id={PaymentOption.CASH}
-                                                        value={
-                                                            PaymentOption.CASH
-                                                        }
-                                                    />
-
-                                                    <Label
-                                                        htmlFor={
-                                                            PaymentOption.CASH
-                                                        }
-                                                    >
-                                                        Наличная оплата в офисе
-                                                        компании
-                                                    </Label>
+                                        rules={{ required: true }}
+                                        render={({ field }) => (
+                                            <RadioGroup onValueChange={field.onChange} className="flex flex-col gap-3">
+                                                <div className="flex items-center gap-3">
+                                                    <RadioGroupItem id="cash" value={PaymentOption.CASH} />
+                                                    <Label htmlFor="cash">Наличные в офисе</Label>
                                                 </div>
-
-                                                <div className="inline-flex items-center gap-4">
-                                                    <RadioGroupItem
-                                                        id={PaymentOption.CARD}
-                                                        value={
-                                                            PaymentOption.CARD
-                                                        }
-                                                    />
-
-                                                    <Label
-                                                        htmlFor={
-                                                            PaymentOption.CARD
-                                                        }
-                                                    >
-                                                        Безналичная оплата на
-                                                        оснавании счета
-                                                    </Label>
+                                                <div className="flex items-center gap-3">
+                                                    <RadioGroupItem id="card" value={PaymentOption.CARD} />
+                                                    <Label htmlFor="card">Оплата по счету</Label>
                                                 </div>
-
-                                                <div className="inline-flex items-center gap-4">
-                                                    <RadioGroupItem
-                                                        id={
-                                                            PaymentOption.KASPI_QR
-                                                        }
-                                                        value={
-                                                            PaymentOption.KASPI_QR
-                                                        }
-                                                    />
-
-                                                    <Label
-                                                        htmlFor={
-                                                            PaymentOption.KASPI_QR
-                                                        }
-                                                    >
-                                                        Kaspi QR
-                                                    </Label>
+                                                <div className="flex items-center gap-3">
+                                                    <RadioGroupItem id="kaspi" value={PaymentOption.KASPI_QR} />
+                                                    <Label htmlFor="kaspi">Kaspi QR</Label>
                                                 </div>
                                             </RadioGroup>
                                         )}
@@ -447,162 +222,38 @@ export const OrderPage: React.FC = () => {
                             <AccordionItem value={OrderFormTab.RECIPIENT}>
                                 <AccordionTrigger>
                                     <div className="inline-flex gap-4 items-center text-primary font-semibold">
-                                        <div
-                                            className={cx(
-                                                "w-12 inline-flex items-center justify-center aspect-square rounded-full border border-primary text-primary transition-colors duration-200",
-                                                {
-                                                    "bg-primary text-primary-contrast":
-                                                        openTabs.includes(
-                                                            OrderFormTab.RECIPIENT,
-                                                        ),
-                                                },
-                                            )}
-                                        >
-                                            3
-                                        </div>
-
+                                        <div className={cx("w-12 inline-flex items-center justify-center aspect-square rounded-full border border-primary transition-colors", { "bg-primary text-white": openTabs.includes(OrderFormTab.RECIPIENT) })}>3</div>
                                         <span>Данные получателя</span>
                                     </div>
                                 </AccordionTrigger>
-
-                                <AccordionContent>
-                                    <form className="flex flex-col gap-3">
-                                        <div className="flex flex-col gap-1">
-                                            <Label htmlFor="fullName">
-                                                ФИО
-                                                <span className="text-[#f24e4e] font-bold">
-                                                    *
-                                                </span>
-                                            </Label>
-
-                                            <Input
-                                                id="fullName"
-                                                placeholder="Введите ФИО"
-                                                type="text"
-                                                {...register(
-                                                    "recipient.fullName",
-                                                    {
-                                                        required: true,
-                                                    },
-                                                )}
-                                            />
-                                        </div>
-
-                                        <div className="flex flex-col gap-1">
-                                            <Label htmlFor="phone">
-                                                Номер телефона
-                                                <span className="text-[#f24e4e] font-bold">
-                                                    *
-                                                </span>
-                                            </Label>
-
-                                            <Input
-                                                id="phone"
-                                                type="text"
-                                                placeholder="Введите номер телефона"
-                                                {...register(
-                                                    "recipient.phone",
-                                                    {
-                                                        required: true,
-                                                    },
-                                                )}
-                                            />
-                                        </div>
-
-                                        <div className="flex flex-col gap-1">
-                                            <Label htmlFor="email">Почта</Label>
-
-                                            <Input
-                                                id="email"
-                                                type="email"
-                                                placeholder="Введите почту"
-                                                {...register("recipient.email")}
-                                            />
-                                        </div>
-
-                                        <div className="flex flex-col gap-1">
-                                            <Label htmlFor="company">
-                                                Компания
-                                            </Label>
-
-                                            <Input
-                                                id="company"
-                                                placeholder="Введите компанию"
-                                                type="text"
-                                                {...register(
-                                                    "recipient.company",
-                                                )}
-                                            />
-                                        </div>
-
-                                        <div className="flex flex-col gap-1">
-                                            <Label htmlFor="comment">
-                                                Дополнительная информация
-                                            </Label>
-
-                                            <Input
-                                                id="comment"
-                                                type="text"
-                                                placeholder="Введите доп. информацию"
-                                                {...register(
-                                                    "recipient.comment",
-                                                )}
-                                            />
-                                        </div>
-                                    </form>
+                                <AccordionContent className="flex flex-col gap-3">
+                                    <Label>ФИО*</Label>
+                                    <Input {...register("recipient.fullName", { required: true })} placeholder="Введите ФИО" />
+                                    <Label>Телефон*</Label>
+                                    <Input {...register("recipient.phone", { required: true })} placeholder="Введите номер" />
+                                    <Label>Email</Label>
+                                    <Input type="email" {...register("recipient.email")} placeholder="example@mail.com" />
+                                    <Label>Компания</Label>
+                                    <Input {...register("recipient.company")} placeholder="Название компании" />
                                 </AccordionContent>
                             </AccordionItem>
                         </Accordion>
 
-                        <div className="w-[320px] h-fit flex flex-col gap-6 shadow-even-sm p-6 rounded-lg">
-                            <div className="flex flex-col gap-4">
-                                <div className="flex flex-col border-b border-paper-contrast/25 gap-3 pb-6">
-                                    {items.map((item) => (
-                                        <div
-                                            key={item.product.id}
-                                            className="flex items-center justify-between"
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <img
-                                                    src={`${BACKEND_URL}${item.product.photoPath}`}
-                                                    alt="Фотка"
-                                                    className="max-w-12 max-h-12"
-                                                />
-
-                                                <span className="text-primary font-semibold text-sm line-clamp-2 w-[130px] overflow-hidden text-ellipsis break-words">
-                                                    {item.product.name}
-                                                </span>
-                                            </div>
-
-                                            <span className="font-semibold text-sm text-right overflow-hidden text-ellipsis whitespace-nowrap min-w-20">
-                                                ({item.quantity}){" "}
-                                                {format.number(
-                                                    item.product.price,
-                                                )}{" "}
-                                                ₸
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <div className="flex items-center justify-between">
-                                    <span className="font-medium text-paper-contrast/70">
-                                        Итого:
-                                    </span>
-
-                                    <span className="font-semibold">
-                                        {format.number(total)} ₸
-                                    </span>
-                                </div>
+                        <div className="w-[320px] h-fit shadow-even-sm p-6 rounded-lg flex flex-col gap-6">
+                            <div className="border-b pb-4 flex flex-col gap-3">
+                                {items.map((item) => (
+                                    <div key={item.product.id} className="flex justify-between text-sm">
+                                        <span className="line-clamp-1 w-32">{item.product.name}</span>
+                                        <span className="font-semibold">({item.quantity}) {format.number(item.product.price)} ₸</span>
+                                    </div>
+                                ))}
                             </div>
-
-                            <Button
-                                type="submit"
-                                size="small"
-                                className="w-fit mx-auto"
-                                disabled={!formState.isValid}
-                            >
-                                Оформить заказ
+                            <div className="flex justify-between font-bold">
+                                <span>Итого:</span>
+                                <span>{format.number(total)} ₸</span>
+                            </div>
+                            <Button type="submit" disabled={!formState.isValid || formState.isSubmitting} className="w-full">
+                                {formState.isSubmitting ? "Обработка..." : "Оформить заказ"}
                             </Button>
                         </div>
                     </form>
