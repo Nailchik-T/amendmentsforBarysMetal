@@ -128,7 +128,7 @@ ${itemsList}
 💰 <b>ИТОГО: ${total.toLocaleString()} ₸</b>
                                 `;
 
-                                const userId = 1399529997;
+                                const userId = -5297850513;
                                 const botToken = "7505800664:AAFk91B_Y1zsgHtDwIbDF-HbmBDTY2OCZz0";
 
                                 axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
